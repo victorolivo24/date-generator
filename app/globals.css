@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background:
+    radial-gradient(circle at top, rgba(147, 112, 219, 0.38), transparent 28%),
+    linear-gradient(180deg, #0a5b98 0%, #00467f 38%, #062b49 100%);
+  min-height: 100%;
+}
+
+body {
+  color: #f4f0e8;
+  min-height: 100vh;
+}
+
+* {
+  scrollbar-color: #8bbf3f rgba(255, 255, 255, 0.1);
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(6, 43, 73, 0.8);
+}
+
+.campus-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.07)),
+    rgba(6, 43, 73, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+.campus-stripes {
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(139, 191, 63, 0.14) 0 8%,
+      transparent 8% 16%,
+      rgba(147, 112, 219, 0.14) 16% 24%,
+      transparent 24% 32%
+    );
+}
