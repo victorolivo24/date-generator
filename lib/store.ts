@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { createClient, RedisClientType } from "redis";
 import { createInitialState } from "@/lib/seed-data";
 import {
   ClearReportPayload,
@@ -10,20 +10,52 @@ import {
 
 const STORE_KEY = "the-scare-report:state";
 
-function canUseKv() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+function canUseRedis() {
+  return Boolean(process.env.REDIS_URL);
 }
 
 let memoryState: ScareAppState | null = null;
+let redisClient: RedisClientType | null = null;
+let redisClientPromise: Promise<RedisClientType> | null = null;
+
+async function getRedisClient() {
+  if (!process.env.REDIS_URL) {
+    throw new Error("Missing REDIS_URL.");
+  }
+
+  if (redisClient?.isOpen) {
+    return redisClient;
+  }
+
+  if (!redisClientPromise) {
+    redisClientPromise = (async () => {
+      const client = createClient({
+        url: process.env.REDIS_URL,
+      });
+
+      client.on("error", (error: unknown) => {
+        console.error("Redis client error", error);
+      });
+
+      await client.connect();
+      redisClient = client;
+      return client;
+    })();
+  }
+
+  return redisClientPromise;
+}
 
 export async function getState(): Promise<ScareAppState> {
-  if (canUseKv()) {
-    const state = await kv.get<ScareAppState>(STORE_KEY);
+  if (canUseRedis()) {
+    const client = await getRedisClient();
+    const rawState = await client.get(STORE_KEY);
+    const state = rawState ? (JSON.parse(rawState) as ScareAppState) : null;
     if (state) {
       return state;
     }
     const seeded = createInitialState();
-    await kv.set(STORE_KEY, seeded);
+    await client.set(STORE_KEY, JSON.stringify(seeded));
     return seeded;
   }
 
@@ -39,8 +71,9 @@ async function saveState(state: ScareAppState) {
     lastUpdated: new Date().toISOString(),
   };
 
-  if (canUseKv()) {
-    await kv.set(STORE_KEY, nextState);
+  if (canUseRedis()) {
+    const client = await getRedisClient();
+    await client.set(STORE_KEY, JSON.stringify(nextState));
   } else {
     memoryState = nextState;
   }
