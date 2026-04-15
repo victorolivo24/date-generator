@@ -46,10 +46,9 @@ export const initialDates: DateIdea[] = [
     { name: "Mall walk", venue: "Brookfield Place" },
     { name: "Pier walk", venue: "Hudson River piers" },
   ]),
-  createDate("bowlero-bww-crumbl", "Bowlero + Buffalo Wild Wings + Crumbl", [
+  createDate("bowlero-bww-crumbl", "Bowlero + Buffalo Wild Wings", [
     { name: "Bowling", venue: "Bowlero" },
     { name: "Wings dinner", venue: "Buffalo Wild Wings" },
-    { name: "Dessert stop", venue: "Crumbl" },
   ]),
   createDate(
     "dave-busters-chinese",
@@ -82,12 +81,10 @@ export const initialDates: DateIdea[] = [
   ),
   createDate(
     "central-park-cafe-apartment",
-    "Central Park + Cafe + Smoothie/Insomnia + Her Apartment",
+    "Central Park + Cafe",
     [
       { name: "Park walk", venue: "Central Park" },
       { name: "Cafe stop", venue: "Cafe" },
-      { name: "Snack run", venue: "Smoothie/Insomnia" },
-      { name: "Wind-down", venue: "Her Apartment" },
     ],
   ),
   createDate(
@@ -95,7 +92,7 @@ export const initialDates: DateIdea[] = [
     "Transit Museum Brooklyn + Journaling in the Park",
     [
       { name: "Museum visit", venue: "New York Transit Museum" },
-      { name: "Journaling", venue: "Brooklyn park" },
+      { name: "Journaling, We're not really strangers type question game", venue: "Brooklyn park" },
     ],
   ),
 ];

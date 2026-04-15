@@ -10,6 +10,29 @@ import {
 
 const STORE_KEY = "the-scare-report:state";
 
+const DATE_CLEANUPS: Record<
+  string,
+  {
+    title: string;
+    activities: Array<{ name: string; venue: string }>;
+  }
+> = {
+  "bowlero-bww-crumbl": {
+    title: "Bowlero + Buffalo Wild Wings",
+    activities: [
+      { name: "Bowling", venue: "Bowlero" },
+      { name: "Wings dinner", venue: "Buffalo Wild Wings" },
+    ],
+  },
+  "central-park-cafe-apartment": {
+    title: "Central Park + Cafe",
+    activities: [
+      { name: "Park walk", venue: "Central Park" },
+      { name: "Cafe stop", venue: "Cafe" },
+    ],
+  },
+};
+
 function canUseRedis() {
   return Boolean(process.env.REDIS_URL);
 }
@@ -48,13 +71,57 @@ async function getRedisClient() {
   return redisClientPromise;
 }
 
+function normalizeStoredDates(state: ScareAppState) {
+  let changed = false;
+
+  const dates = state.dates.map((date) => {
+    const cleanup = DATE_CLEANUPS[date.date_id];
+    if (!cleanup) {
+      return date;
+    }
+
+    const sameTitle = date.title === cleanup.title;
+    const sameActivities =
+      date.activities.length === cleanup.activities.length &&
+      date.activities.every(
+        (activity, index) =>
+          activity.name === cleanup.activities[index]?.name &&
+          activity.venue === cleanup.activities[index]?.venue,
+      );
+
+    if (sameTitle && sameActivities) {
+      return date;
+    }
+
+    changed = true;
+    return {
+      ...date,
+      title: cleanup.title,
+      activities: cleanup.activities.map((activity, index) => ({
+        id: index + 1,
+        name: activity.name,
+        venue: activity.venue,
+      })),
+    };
+  });
+
+  return {
+    changed,
+    state: changed ? { ...state, dates } : state,
+  };
+}
+
 export async function getState(): Promise<ScareAppState> {
   if (canUseRedis()) {
     const client = await getRedisClient();
     const rawState = await client.get(STORE_KEY);
     const state = rawState ? (JSON.parse(rawState) as ScareAppState) : null;
     if (state) {
-      return state;
+      const normalized = normalizeStoredDates(state);
+      if (normalized.changed) {
+        await client.set(STORE_KEY, JSON.stringify(normalized.state));
+      }
+      return normalized.state;
     }
     const seeded = createInitialState();
     await client.set(STORE_KEY, JSON.stringify(seeded));
@@ -64,6 +131,8 @@ export async function getState(): Promise<ScareAppState> {
   if (!memoryState) {
     memoryState = createInitialState();
   }
+  const normalized = normalizeStoredDates(memoryState);
+  memoryState = normalized.state;
   return memoryState;
 }
 
