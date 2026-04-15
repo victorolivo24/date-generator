@@ -3,7 +3,7 @@ import { getState } from "@/lib/store";
 import { FinalExamResponse } from "@/lib/types";
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 function buildPrompt(input: {
   location: string;
