@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState, useTransition } from "react";
 import clsx from "clsx";
 import {
+  CreateDatePayload,
   FinalExamResponse,
   ReportUpdatePayload,
   ScareAppState,
@@ -16,6 +17,11 @@ type FinalExamForm = {
   location: string;
   weather: string;
   day: string;
+};
+
+type NewDateForm = {
+  title: string;
+  activities: CreateDatePayload["activities"];
 };
 
 function StatusPill({
@@ -213,6 +219,10 @@ export function ScareReportApp() {
   const [state, setState] = useState<ScareAppState | null>(null);
   const [wishlistDraft, setWishlistDraft] = useState("");
   const [wishlistDirty, setWishlistDirty] = useState(false);
+  const [newDateForm, setNewDateForm] = useState<NewDateForm>({
+    title: "",
+    activities: [{ name: "", venue: "" }],
+  });
   const [finalExamForm, setFinalExamForm] = useState<FinalExamForm>({
     location: "",
     weather: "",
@@ -301,6 +311,32 @@ export function ScareReportApp() {
     pushUpdate({
       type: "report",
       ...payload,
+    });
+  };
+
+  const saveNewDate = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const title = newDateForm.title.trim();
+    const activities = newDateForm.activities
+      .map((activity) => ({
+        name: activity.name.trim(),
+        venue: activity.venue.trim(),
+      }))
+      .filter((activity) => activity.name && activity.venue);
+
+    if (!title || !activities.length) {
+      setError("Add a title and at least one activity with a venue.");
+      return;
+    }
+
+    pushUpdate({
+      type: "create-date",
+      title,
+      activities,
+    });
+    setNewDateForm({
+      title: "",
+      activities: [{ name: "", venue: "" }],
     });
   };
 
@@ -434,6 +470,127 @@ export function ScareReportApp() {
                 >
                   {isPending ? "Saving..." : "Seal Aspirations"}
                 </button>
+              </form>
+            </section>
+
+            <section className="campus-card rounded-[30px] p-5 sm:p-6">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.35em] text-mu-purple">
+                    New Assignment
+                  </p>
+                  <h2 className="mt-2 font-[family-name:var(--font-graduate)] text-3xl text-mu-cream">
+                    Add a new date
+                  </h2>
+                </div>
+                <p className="max-w-md text-sm text-white/70">
+                  Create a fresh date idea with one or more activity and venue pairs. It
+                  will appear immediately in the pending feedback queue for both people.
+                </p>
+              </div>
+
+              <form onSubmit={saveNewDate} className="mt-5 space-y-4">
+                <label className="block space-y-2">
+                  <span className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.34em] text-mu-green">
+                    Date title
+                  </span>
+                  <input
+                    value={newDateForm.title}
+                    onChange={(event) =>
+                      setNewDateForm((current) => ({
+                        ...current,
+                        title: event.target.value,
+                      }))
+                    }
+                    placeholder="Sushi + Bookstore + Sunset Walk"
+                    className="w-full rounded-[22px] border border-white/10 bg-[#082640]/75 px-4 py-3 text-sm text-mu-cream outline-none transition focus:border-mu-green"
+                  />
+                </label>
+
+                <div className="space-y-3">
+                  {newDateForm.activities.map((activity, index) => (
+                    <div
+                      key={index}
+                      className="rounded-[24px] border border-white/10 bg-[#082640]/70 p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.3em] text-mu-purple">
+                          Stop {index + 1}
+                        </p>
+                        {newDateForm.activities.length > 1 ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setNewDateForm((current) => ({
+                                ...current,
+                                activities: current.activities.filter(
+                                  (_, activityIndex) => activityIndex !== index,
+                                ),
+                              }))
+                            }
+                            className="text-xs uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
+                          >
+                            Remove
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <input
+                          value={activity.name}
+                          onChange={(event) =>
+                            setNewDateForm((current) => ({
+                              ...current,
+                              activities: current.activities.map((item, activityIndex) =>
+                                activityIndex === index
+                                  ? { ...item, name: event.target.value }
+                                  : item,
+                              ),
+                            }))
+                          }
+                          placeholder="Activity name"
+                          className="w-full rounded-[18px] border border-white/10 bg-[#0b3153]/75 px-4 py-3 text-sm text-mu-cream outline-none transition focus:border-mu-green"
+                        />
+                        <input
+                          value={activity.venue}
+                          onChange={(event) =>
+                            setNewDateForm((current) => ({
+                              ...current,
+                              activities: current.activities.map((item, activityIndex) =>
+                                activityIndex === index
+                                  ? { ...item, venue: event.target.value }
+                                  : item,
+                              ),
+                            }))
+                          }
+                          placeholder="Venue / location"
+                          className="w-full rounded-[18px] border border-white/10 bg-[#0b3153]/75 px-4 py-3 text-sm text-mu-cream outline-none transition focus:border-mu-green"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNewDateForm((current) => ({
+                        ...current,
+                        activities: [...current.activities, { name: "", venue: "" }],
+                      }))
+                    }
+                    className="rounded-full border border-white/20 bg-white/10 px-5 py-3 font-[family-name:var(--font-bebas)] text-lg uppercase tracking-[0.16em] text-mu-cream transition hover:border-mu-purple hover:bg-mu-purple/20"
+                  >
+                    Add Stop
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="rounded-full border border-mu-green bg-mu-green px-5 py-3 font-[family-name:var(--font-bebas)] text-lg uppercase tracking-[0.16em] text-mu-navy transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isPending ? "Submitting..." : "Create Date"}
+                  </button>
+                </div>
               </form>
             </section>
 

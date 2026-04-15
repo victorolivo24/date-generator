@@ -42,6 +42,16 @@ export type WishlistUpdatePayload = {
   text: string;
 };
 
+export type NewDateActivityInput = {
+  name: string;
+  venue: string;
+};
+
+export type CreateDatePayload = {
+  title: string;
+  activities: NewDateActivityInput[];
+};
+
 export type FinalExamRequest = {
   day: string;
   weather: string;

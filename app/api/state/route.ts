@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUserName } from "@/lib/seed-data";
-import { getState, updateReport, updateWishlist } from "@/lib/store";
+import { createDate, getState, updateReport, updateWishlist } from "@/lib/store";
 
 export async function GET() {
   const state = await getState();
@@ -43,6 +43,34 @@ export async function POST(request: NextRequest) {
       activity_scores: body.activity_scores,
       venue_scores: body.venue_scores,
       notes: body.notes,
+    });
+    return NextResponse.json(state);
+  }
+
+  if (body.type === "create-date") {
+    const validActivities =
+      Array.isArray(body.activities) &&
+      body.activities.length > 0 &&
+      body.activities.every(
+        (activity: unknown) =>
+          typeof activity === "object" &&
+          activity !== null &&
+          typeof (activity as { name?: unknown }).name === "string" &&
+          typeof (activity as { venue?: unknown }).venue === "string" &&
+          (activity as { name: string }).name.trim().length > 0 &&
+          (activity as { venue: string }).venue.trim().length > 0,
+      );
+
+    if (typeof body.title !== "string" || !body.title.trim() || !validActivities) {
+      return NextResponse.json({ error: "Invalid new date payload." }, { status: 400 });
+    }
+
+    const state = await createDate({
+      title: body.title.trim(),
+      activities: body.activities.map((activity: { name: string; venue: string }) => ({
+        name: activity.name.trim(),
+        venue: activity.venue.trim(),
+      })),
     });
     return NextResponse.json(state);
   }

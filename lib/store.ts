@@ -1,6 +1,7 @@
 import { kv } from "@vercel/kv";
 import { createInitialState } from "@/lib/seed-data";
 import {
+  CreateDatePayload,
   ReportUpdatePayload,
   ScareAppState,
   WishlistUpdatePayload,
@@ -46,6 +47,16 @@ async function saveState(state: ScareAppState) {
   return nextState;
 }
 
+function slugifyDateTitle(title: string) {
+  const base = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+
+  return `${base || "date"}-${Date.now().toString(36)}`;
+}
+
 export async function updateWishlist(payload: WishlistUpdatePayload) {
   const state = await getState();
   return saveState({
@@ -78,5 +89,27 @@ export async function updateReport(payload: ReportUpdatePayload) {
   return saveState({
     ...state,
     dates: nextDates,
+  });
+}
+
+export async function createDate(payload: CreateDatePayload) {
+  const state = await getState();
+  const nextDate = {
+    date_id: slugifyDateTitle(payload.title),
+    title: payload.title,
+    activities: payload.activities.map((activity, index) => ({
+      id: index + 1,
+      name: activity.name,
+      venue: activity.venue,
+    })),
+    feedback: {
+      Victor: { activity_scores: [], venue_scores: [], notes: "" },
+      Gianna: { activity_scores: [], venue_scores: [], notes: "" },
+    },
+  };
+
+  return saveState({
+    ...state,
+    dates: [nextDate, ...state.dates],
   });
 }
