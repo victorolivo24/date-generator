@@ -1,4 +1,4 @@
-import { createClient, RedisClientType } from "redis";
+import { createClient } from "redis";
 import { createInitialState } from "@/lib/seed-data";
 import {
   ClearReportPayload,
@@ -15,8 +15,10 @@ function canUseRedis() {
 }
 
 let memoryState: ScareAppState | null = null;
-let redisClient: RedisClientType | null = null;
-let redisClientPromise: Promise<RedisClientType> | null = null;
+type RedisClient = ReturnType<typeof createClient>;
+
+let redisClient: RedisClient | null = null;
+let redisClientPromise: Promise<RedisClient> | null = null;
 
 async function getRedisClient() {
   if (!process.env.REDIS_URL) {
