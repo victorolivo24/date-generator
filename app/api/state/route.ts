@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUserName } from "@/lib/seed-data";
-import { createDate, getState, updateReport, updateWishlist } from "@/lib/store";
+import { clearReport, createDate, getState, updateReport, updateWishlist } from "@/lib/store";
 
 export async function GET() {
   const state = await getState();
@@ -43,6 +43,18 @@ export async function POST(request: NextRequest) {
       activity_scores: body.activity_scores,
       venue_scores: body.venue_scores,
       notes: body.notes,
+    });
+    return NextResponse.json(state);
+  }
+
+  if (body.type === "clear-report") {
+    if (!isUserName(body.user) || typeof body.dateId !== "string") {
+      return NextResponse.json({ error: "Invalid clear report payload." }, { status: 400 });
+    }
+
+    const state = await clearReport({
+      user: body.user,
+      dateId: body.dateId,
     });
     return NextResponse.json(state);
   }

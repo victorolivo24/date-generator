@@ -1,6 +1,7 @@
 import { kv } from "@vercel/kv";
 import { createInitialState } from "@/lib/seed-data";
 import {
+  ClearReportPayload,
   CreateDatePayload,
   ReportUpdatePayload,
   ScareAppState,
@@ -80,6 +81,30 @@ export async function updateReport(payload: ReportUpdatePayload) {
               activity_scores: payload.activity_scores,
               venue_scores: payload.venue_scores,
               notes: payload.notes,
+            },
+          },
+        }
+      : date,
+  );
+
+  return saveState({
+    ...state,
+    dates: nextDates,
+  });
+}
+
+export async function clearReport(payload: ClearReportPayload) {
+  const state = await getState();
+  const nextDates = state.dates.map((date) =>
+    date.date_id === payload.dateId
+      ? {
+          ...date,
+          feedback: {
+            ...date.feedback,
+            [payload.user]: {
+              activity_scores: [],
+              venue_scores: [],
+              notes: "",
             },
           },
         }

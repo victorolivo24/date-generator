@@ -16,6 +16,7 @@ html {
 body {
   color: #f4f0e8;
   min-height: 100vh;
+  background-attachment: fixed;
 }
 
 * {
@@ -43,4 +44,29 @@ body {
       rgba(147, 112, 219, 0.14) 16% 24%,
       transparent 24% 32%
     );
+}
+
+.mu-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(139, 191, 63, 0.1) 38% 42%, transparent 42% 100%),
+    linear-gradient(245deg, transparent 0 66%, rgba(255, 255, 255, 0.08) 66% 69%, transparent 69% 100%);
+  pointer-events: none;
+}
+
+.mu-hero::after {
+  content: "";
+  position: absolute;
+  right: -36px;
+  bottom: -44px;
+  width: 200px;
+  height: 200px;
+  border-radius: 999px;
+  border: 18px solid rgba(139, 191, 63, 0.12);
+  box-shadow:
+    0 0 0 22px rgba(255, 255, 255, 0.04),
+    inset 0 0 0 10px rgba(147, 112, 219, 0.12);
+  pointer-events: none;
 }

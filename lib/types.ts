@@ -37,6 +37,11 @@ export type ReportUpdatePayload = {
   notes: string;
 };
 
+export type ClearReportPayload = {
+  user: UserName;
+  dateId: string;
+};
+
 export type WishlistUpdatePayload = {
   user: UserName;
   text: string;
@@ -56,7 +61,6 @@ export type FinalExamRequest = {
   day: string;
   weather: string;
   location: string;
-  focusUser: UserName;
 };
 
 export type FinalExamResponse = {

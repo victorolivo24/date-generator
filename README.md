@@ -20,3 +20,7 @@ Monsters University-themed date tracking app built with Next.js and Tailwind CSS
 5. Run `npm run dev`
 
 Without Vercel KV configured, the app falls back to in-memory storage for local development only.
+
+## Optional Audio Asset
+
+If you want the in-app music button to work, add an audio file at `public/mu-theme.mp3`.

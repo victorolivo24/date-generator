@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isUserName } from "@/lib/seed-data";
 import { getState } from "@/lib/store";
 import { FinalExamResponse } from "@/lib/types";
 
@@ -10,7 +9,6 @@ function buildPrompt(input: {
   location: string;
   weather: string;
   day: string;
-  focusUser: "Victor" | "Gianna";
   stateJson: string;
   wishlistsJson: string;
 }) {
@@ -21,7 +19,6 @@ Context:
 - Couple location: ${input.location}
 - Weather: ${input.weather}
 - Day: ${input.day}
-- Focus user currently using the app: ${input.focusUser}
 
 Rated and pending history JSON:
 ${input.stateJson}
@@ -32,15 +29,17 @@ ${input.wishlistsJson}
 Instructions:
 - Recommend exactly one date idea tailored to the context above.
 - Learn from the rated dates JSON to avoid boring repetition and to build on strong patterns.
-- You may use the wishlist as surprise inspiration.
-- The UI keeps wishlists private, but you are allowed to use either wishlist here as hidden planning context.
+- Treat this as a couple-planning problem, not a single-user request.
+- You may use both wishlists as surprise inspiration, but the final idea should be compatible with both people.
+- The UI keeps wishlists private, but you are allowed to use both wishlists here as hidden planning context.
 - Return JSON with keys: recommendation, rationale, inspiredByWishlist.
 - "recommendation" should be 2-4 sentences and sound playful, like a MU scare coach.
-- "rationale" should briefly connect the choice to weather, day, location, and prior date history.
+- "rationale" should briefly connect the choice to weather, day, location, prior date history, and why the idea works for both people.
 - "inspiredByWishlist" must be true if any part of the idea was based on the Secret Scare Aspirations.
 - If inspiredByWishlist is true, the final sentence of recommendation must be exactly one of:
   P.S. Victor secretly wanted to do this!
   P.S. Gianna secretly wanted to do this!
+  P.S. Victor and Gianna secretly wanted to do this!
 - If inspiredByWishlist is false, do not mention the secret wishlist.
 `.trim();
 }
@@ -49,7 +48,6 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
 
   if (
-    !isUserName(body.focusUser) ||
     typeof body.location !== "string" ||
     typeof body.weather !== "string" ||
     typeof body.day !== "string"
@@ -69,7 +67,6 @@ export async function POST(request: NextRequest) {
     location: body.location,
     weather: body.weather,
     day: body.day,
-    focusUser: body.focusUser,
     stateJson: JSON.stringify(state.dates, null, 2),
     wishlistsJson: JSON.stringify(state.wishlist, null, 2),
   });
