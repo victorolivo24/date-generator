@@ -97,6 +97,7 @@ function DateCard({
 }) {
   const existingFeedback = date.feedback[currentUser];
   const hasExistingReport = hasUserReviewedDate(date, currentUser);
+  const feedbackKey = JSON.stringify(existingFeedback);
   const [activityScores, setActivityScores] = useState<number[]>(
     existingFeedback.activity_scores.length
       ? existingFeedback.activity_scores
@@ -121,7 +122,7 @@ function DateCard({
         : date.activities.map(() => 8),
     );
     setNotes(existingFeedback.notes);
-  }, [date, existingFeedback.activity_scores, existingFeedback.notes, existingFeedback.venue_scores]);
+  }, [date.date_id, date.activities.length, feedbackKey]);
 
   const victorDone = hasUserReviewedDate(date, "Victor");
   const giannaDone = hasUserReviewedDate(date, "Gianna");
