@@ -61,10 +61,12 @@ export type FinalExamRequest = {
   day: string;
   weather: string;
   location: string;
+  additionalCriteria?: string;
 };
 
 export type FinalExamResponse = {
-  recommendation: string;
+  styleRecommendation: string;
+  placeRecommendation: string;
   rationale: string;
   inspiredByWishlist: boolean;
 };

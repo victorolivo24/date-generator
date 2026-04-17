@@ -42,8 +42,8 @@ export const initialDates: DateIdea[] = [
       { name: "Gelato stop", venue: "Kikilu Gelato" },
     ],
   ),
-  createDate("brookfield-pier", "Brookfield Place Mall Pier Walk", [
-    { name: "Mall walk", venue: "Brookfield Place" },
+  createDate("brookfield-pier", "Brookfield Place Mall + Pier Walk", [
+    { name: "Eat at mall", venue: "Brookfield Place" },
     { name: "Pier walk", venue: "Hudson River piers" },
   ]),
   createDate("bowlero-bww-crumbl", "Bowlero + Buffalo Wild Wings", [

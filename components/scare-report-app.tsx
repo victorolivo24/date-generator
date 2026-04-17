@@ -17,6 +17,7 @@ type FinalExamForm = {
   location: string;
   weather: string;
   day: string;
+  additionalCriteria: string;
 };
 
 type NewDateForm = {
@@ -253,6 +254,7 @@ export function ScareReportApp() {
     location: "",
     weather: "",
     day: "",
+    additionalCriteria: "",
   });
   const [finalExamResult, setFinalExamResult] = useState<FinalExamResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -836,6 +838,23 @@ export function ScareReportApp() {
                     className="w-full rounded-2xl border border-white/10 bg-[#082640]/75 px-4 py-3 text-sm text-mu-cream outline-none transition focus:border-mu-green"
                   />
                 </label>
+                <label className="block space-y-2">
+                  <span className="text-xs uppercase tracking-[0.25em] text-white/70">
+                    Additional Criteria
+                  </span>
+                  <textarea
+                    value={finalExamForm.additionalCriteria}
+                    onChange={(event) =>
+                      setFinalExamForm((current) => ({
+                        ...current,
+                        additionalCriteria: event.target.value,
+                      }))
+                    }
+                    rows={4}
+                    placeholder="Optional: we want to be outside, this is a double date, keep it low-key, near a train, under a budget..."
+                    className="w-full rounded-2xl border border-white/10 bg-[#082640]/75 px-4 py-3 text-sm text-mu-cream outline-none transition focus:border-mu-green"
+                  />
+                </label>
                 <button
                   type="submit"
                   disabled={isPending}
@@ -847,13 +866,28 @@ export function ScareReportApp() {
 
               {finalExamResult ? (
                 <div className="mt-5 rounded-[26px] border border-white/10 bg-[#082640]/75 p-5">
-                  <p className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.35em] text-mu-green">
-                    Recommendation
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                      <p className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.35em] text-mu-green">
+                        Style Recommendation
+                      </p>
+                      <p className="mt-3 text-base leading-7 text-mu-cream">
+                        {finalExamResult.styleRecommendation}
+                      </p>
+                    </div>
+                    <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                      <p className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.35em] text-mu-purple">
+                        Specific Place
+                      </p>
+                      <p className="mt-3 text-base leading-7 text-mu-cream">
+                        {finalExamResult.placeRecommendation}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-4 font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.35em] text-white/70">
+                    Rationale
                   </p>
-                  <p className="mt-3 text-base leading-7 text-mu-cream">
-                    {finalExamResult.recommendation}
-                  </p>
-                  <p className="mt-4 text-sm leading-6 text-white/70">
+                  <p className="mt-3 text-sm leading-6 text-white/70">
                     {finalExamResult.rationale}
                   </p>
                 </div>
