@@ -17,6 +17,13 @@ const DATE_CLEANUPS: Record<
     activities: Array<{ name: string; venue: string }>;
   }
 > = {
+  "brookfield-pier": {
+    title: "Brookfield Place Mall + Pier Walk",
+    activities: [
+      { name: "Eat at mall", venue: "Brookfield Place" },
+      { name: "Pier walk", venue: "Hudson River piers" },
+    ],
+  },
   "bowlero-bww-crumbl": {
     title: "Bowlero + Buffalo Wild Wings",
     activities: [
