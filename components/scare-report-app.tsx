@@ -313,6 +313,10 @@ export function ScareReportApp() {
     state && currentUser
       ? state.dates.filter((date) => !hasUserReviewedDate(date, currentUser))
       : [];
+  const currentUserReviewedDates =
+    state && currentUser
+      ? state.dates.filter((date) => hasUserReviewedDate(date, currentUser))
+      : [];
   const activeReviewDate = currentUserPendingDates[reviewIndex] ?? null;
 
   useEffect(() => {
@@ -899,19 +903,19 @@ export function ScareReportApp() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="font-[family-name:var(--font-bebas)] text-xs uppercase tracking-[0.35em] text-mu-green">
-                    Archived Reports
+                    Dates You Have Filed
                   </p>
                   <h2 className="mt-2 font-[family-name:var(--font-graduate)] text-3xl text-mu-cream">
-                    Completed dates
+                    Undo anytime
                   </h2>
                 </div>
                 <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
-                  {pendingDates.length} still pending overall
+                  {currentUserReviewedDates.length} filed by you
                 </div>
               </div>
               <div className="mt-5 space-y-3">
-                {reviewedDates.length ? (
-                  reviewedDates.map((date) => (
+                {currentUserReviewedDates.length ? (
+                  currentUserReviewedDates.map((date) => (
                     <div
                       key={date.date_id}
                       className="rounded-[24px] border border-white/10 bg-[#082640]/70 p-4"
@@ -930,29 +934,27 @@ export function ScareReportApp() {
                             </span>
                           </div>
                         </div>
-                        {hasUserReviewedDate(date, currentUser) ? (
-                          <div className="flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                clearExistingReport({
-                                  user: currentUser,
-                                  dateId: date.date_id,
-                                })
-                              }
-                              disabled={isPending}
-                              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 font-[family-name:var(--font-bebas)] text-base uppercase tracking-[0.14em] text-mu-cream transition hover:border-red-300/60 hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              Undo My Report
-                            </button>
-                          </div>
-                        ) : null}
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              clearExistingReport({
+                                user: currentUser,
+                                dateId: date.date_id,
+                              })
+                            }
+                            disabled={isPending}
+                            className="rounded-full border border-white/20 bg-white/10 px-4 py-2 font-[family-name:var(--font-bebas)] text-base uppercase tracking-[0.14em] text-mu-cream transition hover:border-red-300/60 hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Undo My Report
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="rounded-[24px] border border-white/10 bg-[#082640]/70 p-4 text-sm text-white/70">
-                    Completed dates will move here after both people submit their scare reports.
+                    Dates you submit reports for will appear here, even if the other person has not filed yet.
                   </div>
                 )}
               </div>
