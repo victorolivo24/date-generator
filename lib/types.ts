@@ -12,6 +12,9 @@ export type UserFeedback = {
   activity_scores: number[];
   venue_scores: number[];
   notes: string;
+  submittedAt?: string;
+  clearedAt?: string;
+  lastAction?: "submitted" | "cleared";
 };
 
 export type DateFeedback = Record<UserName, UserFeedback>;

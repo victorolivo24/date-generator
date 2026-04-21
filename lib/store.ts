@@ -182,6 +182,7 @@ export async function updateWishlist(payload: WishlistUpdatePayload) {
 
 export async function updateReport(payload: ReportUpdatePayload) {
   const state = await getState();
+  const submittedAt = new Date().toISOString();
   const nextDates = state.dates.map((date) =>
     date.date_id === payload.dateId
       ? {
@@ -192,6 +193,9 @@ export async function updateReport(payload: ReportUpdatePayload) {
               activity_scores: payload.activity_scores,
               venue_scores: payload.venue_scores,
               notes: payload.notes,
+              submittedAt,
+              clearedAt: undefined,
+              lastAction: "submitted" as const,
             },
           },
         }
@@ -206,6 +210,7 @@ export async function updateReport(payload: ReportUpdatePayload) {
 
 export async function clearReport(payload: ClearReportPayload) {
   const state = await getState();
+  const clearedAt = new Date().toISOString();
   const nextDates = state.dates.map((date) =>
     date.date_id === payload.dateId
       ? {
@@ -216,6 +221,9 @@ export async function clearReport(payload: ClearReportPayload) {
               activity_scores: [],
               venue_scores: [],
               notes: "",
+              submittedAt: date.feedback[payload.user].submittedAt,
+              clearedAt,
+              lastAction: "cleared" as const,
             },
           },
         }

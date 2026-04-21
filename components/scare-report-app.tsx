@@ -32,6 +32,19 @@ function hasUserReviewedDate(date: ScareAppState["dates"][number], user: UserNam
   );
 }
 
+function formatReportTimestamp(value?: string) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function StatusPill({
   label,
   active,
@@ -209,12 +222,20 @@ function DateCard({
             <button
               type="button"
               disabled={saving}
-              onClick={() =>
+              onClick={() => {
+                const confirmed = window.confirm(
+                  `Undo ${currentUser}'s report for "${date.title}"? This only clears ${currentUser}'s scores and notes.`,
+                );
+
+                if (!confirmed) {
+                  return;
+                }
+
                 onClear({
                   user: currentUser,
                   dateId: date.date_id,
-                })
-              }
+                });
+              }}
               className="rounded-full border border-white/20 bg-white/10 px-5 py-3 font-[family-name:var(--font-bebas)] text-lg uppercase tracking-[0.16em] text-mu-cream transition hover:border-red-300/60 hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Undo Report
@@ -915,43 +936,62 @@ export function ScareReportApp() {
               </div>
               <div className="mt-5 space-y-3">
                 {currentUserReviewedDates.length ? (
-                  currentUserReviewedDates.map((date) => (
-                    <div
-                      key={date.date_id}
-                      className="rounded-[24px] border border-white/10 bg-[#082640]/70 p-4"
-                    >
-                      <div className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <h3 className="text-lg font-semibold text-mu-cream">{date.title}</h3>
-                          <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-white/65">
-                            <span>
-                              Victor {getAverage(date.feedback.Victor.activity_scores)?.toFixed(1) ?? "n/a"}
-                              /{getAverage(date.feedback.Victor.venue_scores)?.toFixed(1) ?? "n/a"}
-                            </span>
-                            <span>
-                              Gianna {getAverage(date.feedback.Gianna.activity_scores)?.toFixed(1) ?? "n/a"}
-                              /{getAverage(date.feedback.Gianna.venue_scores)?.toFixed(1) ?? "n/a"}
-                            </span>
+                  currentUserReviewedDates.map((date) => {
+                    const submittedAt = formatReportTimestamp(
+                      date.feedback[currentUser].submittedAt,
+                    );
+
+                    return (
+                      <div
+                        key={date.date_id}
+                        className="rounded-[24px] border border-white/10 bg-[#082640]/70 p-4"
+                      >
+                        <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <h3 className="text-lg font-semibold text-mu-cream">{date.title}</h3>
+                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/50">
+                                {submittedAt ? `Filed ${submittedAt}` : "Filed before tracking was added"}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-white/65">
+                              <span>
+                                Victor {getAverage(date.feedback.Victor.activity_scores)?.toFixed(1) ?? "n/a"}
+                                /{getAverage(date.feedback.Victor.venue_scores)?.toFixed(1) ?? "n/a"}
+                              </span>
+                              <span>
+                                Gianna {getAverage(date.feedback.Gianna.activity_scores)?.toFixed(1) ?? "n/a"}
+                                /{getAverage(date.feedback.Gianna.venue_scores)?.toFixed(1) ?? "n/a"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const confirmed = window.confirm(
+                                  `Undo ${currentUser}'s report for "${date.title}"? This only clears ${currentUser}'s scores and notes.`,
+                                );
+
+                                if (!confirmed) {
+                                  return;
+                                }
+
+                                clearExistingReport({
+                                  user: currentUser,
+                                  dateId: date.date_id,
+                                });
+                              }}
+                              disabled={isPending}
+                              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 font-[family-name:var(--font-bebas)] text-base uppercase tracking-[0.14em] text-mu-cream transition hover:border-red-300/60 hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Undo My Report
+                            </button>
                           </div>
                         </div>
-                        <div className="flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              clearExistingReport({
-                                user: currentUser,
-                                dateId: date.date_id,
-                              })
-                            }
-                            disabled={isPending}
-                            className="rounded-full border border-white/20 bg-white/10 px-4 py-2 font-[family-name:var(--font-bebas)] text-base uppercase tracking-[0.14em] text-mu-cream transition hover:border-red-300/60 hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Undo My Report
-                          </button>
-                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="rounded-[24px] border border-white/10 bg-[#082640]/70 p-4 text-sm text-white/70">
                     Dates you submit reports for will appear here, even if the other person has not filed yet.
