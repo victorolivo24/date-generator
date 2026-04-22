@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getState } from "@/lib/store";
 import { FinalExamResponse } from "@/lib/types";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"] as const;
+
+function getGeminiUrl(model: (typeof GEMINI_MODELS)[number]) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
 
 function buildPrompt(input: {
   location: string;
@@ -85,48 +88,66 @@ export async function POST(request: NextRequest) {
     wishlistsJson: JSON.stringify(state.wishlist, null, 2),
   });
 
-  const geminiResponse = await fetch(
-    `${GEMINI_URL}?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
+  let lastHighDemandError = "";
+
+  for (const [index, model] of GEMINI_MODELS.entries()) {
+    const geminiResponse = await fetch(
+      `${getGeminiUrl(model)}?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      }),
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
+        }),
+      },
+    );
+
+    if (!geminiResponse.ok) {
+      const errorText = await geminiResponse.text();
+      const hasFallback = index < GEMINI_MODELS.length - 1;
+
+      if (geminiResponse.status === 503 && hasFallback) {
+        lastHighDemandError = errorText;
+        continue;
+      }
+
+      return NextResponse.json(
+        { error: `Gemini request failed: ${errorText}` },
+        { status: geminiResponse.status },
+      );
+    }
+
+    const payload = await geminiResponse.json();
+    const rawText = payload.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!rawText) {
+      return NextResponse.json({ error: "Gemini returned an empty response." }, { status: 502 });
+    }
+
+    try {
+      const parsed = JSON.parse(rawText) as FinalExamResponse;
+      return NextResponse.json(parsed);
+    } catch {
+      return NextResponse.json(
+        { error: "Gemini returned invalid JSON.", raw: rawText },
+        { status: 502 },
+      );
+    }
+  }
+
+  return NextResponse.json(
+    {
+      error: `Gemini models are currently experiencing high demand: ${lastHighDemandError}`,
     },
+    { status: 503 },
   );
-
-  if (!geminiResponse.ok) {
-    const errorText = await geminiResponse.text();
-    return NextResponse.json(
-      { error: `Gemini request failed: ${errorText}` },
-      { status: geminiResponse.status },
-    );
-  }
-
-  const payload = await geminiResponse.json();
-  const rawText = payload.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!rawText) {
-    return NextResponse.json({ error: "Gemini returned an empty response." }, { status: 502 });
-  }
-
-  try {
-    const parsed = JSON.parse(rawText) as FinalExamResponse;
-    return NextResponse.json(parsed);
-  } catch {
-    return NextResponse.json(
-      { error: "Gemini returned invalid JSON.", raw: rawText },
-      { status: 502 },
-    );
-  }
 }
