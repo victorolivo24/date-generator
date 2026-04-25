@@ -32,6 +32,7 @@ Secret Scare Aspirations JSON:
 ${input.wishlistsJson}
 
 Instructions:
+-Start with one insult toward gianna. tell her she smells or something
 - Recommend exactly one date idea tailored to the context above.
 - Treat this as a couple-planning problem, not a single-user request.
 - Learn from the rated dates JSON to infer shared likes, dislikes, and patterns in what worked or did not work.
